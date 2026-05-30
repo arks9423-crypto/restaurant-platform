@@ -64,6 +64,21 @@
 
 <a href="{{ url_for('menu.menu_page', slug=slug) }}" class="back-btn">← العودة للمنيو</a>
 
+<!-- Sound activation button (required for iOS/Android) -->
+{% if order.status not in ['ready', 'delivered'] %}
+<div style="text-align:center;padding:1rem;">
+  <button id="soundBtn" onclick="window._unlockAudio && window._unlockAudio()"
+    style="background:var(--primary);color:white;border:none;border-radius:14px;
+           padding:.75rem 1.5rem;font-family:'Cairo',sans-serif;font-weight:800;
+           font-size:.95rem;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.15);">
+    🔔 فعّل الإشعار الصوتي
+  </button>
+  <div id="soundActive" style="display:none;color:#22C55E;font-weight:700;font-size:.9rem;margin-top:.4rem;">
+    ✅ الإشعار الصوتي مفعّل — سنبلغك عند جهوز طلبك
+  </div>
+</div>
+{% endif %}
+
 <!-- Ready notification banner (hidden by default) -->
 <div id="readyBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;
      background:linear-gradient(135deg,#22C55E,#16A34A);color:white;text-align:center;
@@ -81,10 +96,27 @@
   const ORDER_NUMBER = {{ order.order_number|tojson }};
   const SLUG = {{ slug|tojson }};
   let notified = false;
+  let audioCtx = null;
+
+  // Must be called from a user gesture to unlock audio on iOS/Android
+  function unlockAudio() {
+    if (audioCtx) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // Play a silent buffer to unlock
+      const buf = audioCtx.createBuffer(1, 1, 22050);
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.connect(audioCtx.destination);
+      src.start(0);
+    } catch(e) {}
+    document.getElementById('soundBtn').style.display = 'none';
+    document.getElementById('soundActive').style.display = 'block';
+  }
 
   function playReadySound() {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
       [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -92,12 +124,14 @@
         gain.connect(ctx.destination);
         osc.type = 'sine';
         osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.4, ctx.currentTime + i * 0.18);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.4);
-        osc.start(ctx.currentTime + i * 0.18);
-        osc.stop(ctx.currentTime + i * 0.18 + 0.4);
+        gain.gain.setValueAtTime(0.5, ctx.currentTime + i * 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.2 + 0.5);
+        osc.start(ctx.currentTime + i * 0.2);
+        osc.stop(ctx.currentTime + i * 0.2 + 0.5);
       });
     } catch(e) {}
+    // Vibrate on Android
+    if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
   }
 
   function checkStatus() {
@@ -113,7 +147,11 @@
       }).catch(() => {});
   }
 
-  setInterval(checkStatus, 10000);
+  // Expose unlockAudio for the button
+  window._unlockAudio = unlockAudio;
+
+  // Poll every 6 seconds
+  setInterval(checkStatus, 6000);
 })();
 {% endif %}
 </script>
