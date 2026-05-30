@@ -26,6 +26,7 @@ class Restaurant(db.Model):
     name_ar = db.Column(db.String(120), nullable=False)
     name_en = db.Column(db.String(120), nullable=False)
     logo_filename = db.Column(db.String(256), nullable=True)
+    logo_data = db.Column(db.Text, nullable=True)
     primary_color = db.Column(db.String(7), nullable=False, default="#FFB800")
     secondary_color = db.Column(db.String(7), nullable=False, default="#009B8D")
     theme_key = db.Column(db.String(30), nullable=False, default="amber")

@@ -184,7 +184,10 @@ def settings(slug):
             if "logo" in request.files and request.files["logo"].filename:
                 f = request.files["logo"]
                 if allowed_file(f.filename):
-                    restaurant.logo_filename = save_upload(f, "logos", slug)
+                    import base64 as _b64
+                    logo_bytes = f.read()
+                    mime = f.content_type or "image/jpeg"
+                    restaurant.logo_data = f"data:{mime};base64,{_b64.b64encode(logo_bytes).decode()}"
             db.session.commit()
             flash("تم حفظ معلومات المطعم", "success")
 

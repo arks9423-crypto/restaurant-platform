@@ -34,7 +34,10 @@
       </div>
       <div class="form-group">
         <label class="form-label">الشعار (Logo)</label>
-        {% if restaurant.logo_filename %}
+        {% if restaurant.logo_data %}
+          <img src="{{ restaurant.logo_data }}"
+               style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);margin-bottom:.5rem;display:block;">
+        {% elif restaurant.logo_filename %}
           <img src="{{ url_for('static', filename='uploads/' + slug + '/logos/' + restaurant.logo_filename) }}"
                style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);margin-bottom:.5rem;display:block;">
         {% endif %}

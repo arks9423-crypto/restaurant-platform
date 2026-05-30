@@ -5,7 +5,9 @@
 <!-- Restaurant Hero Header -->
 <header class="restaurant-hero">
   <div>
-    {% if restaurant.logo_filename %}
+    {% if restaurant.logo_data %}
+      <img class="logo" src="{{ restaurant.logo_data }}" alt="{{ restaurant.name_ar }}">
+    {% elif restaurant.logo_filename %}
       <img class="logo"
            src="{{ url_for('static', filename='uploads/' + slug + '/logos/' + restaurant.logo_filename) }}"
            alt="{{ restaurant.name_ar }}">

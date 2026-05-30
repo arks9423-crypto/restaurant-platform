@@ -34,6 +34,7 @@ def create_app():
 def _migrate_db(db):
     migrations = [
         "ALTER TABLE restaurant ADD COLUMN email VARCHAR(120)",
+        "ALTER TABLE restaurant ADD COLUMN logo_data TEXT",
     ]
     with db.engine.connect() as conn:
         for sql in migrations:
