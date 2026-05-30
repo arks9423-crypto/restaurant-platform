@@ -33,11 +33,11 @@ def create_app():
 
 def _migrate_db(db):
     migrations = [
-        "ALTER TABLE restaurant ADD COLUMN email VARCHAR(120)",
-        "ALTER TABLE restaurant ADD COLUMN logo_data TEXT",
+        "ALTER TABLE restaurant ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
+        "ALTER TABLE restaurant ADD COLUMN IF NOT EXISTS logo_data TEXT",
     ]
-    with db.engine.connect() as conn:
-        for sql in migrations:
+    for sql in migrations:
+        with db.engine.connect() as conn:
             try:
                 conn.execute(db.text(sql))
                 conn.commit()
