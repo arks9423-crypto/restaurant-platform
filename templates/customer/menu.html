@@ -61,7 +61,7 @@
               {{ product.description_ar }}
             </div>
           {% endif %}
-          <div class="product-price">{{ "%.3f"|format(product.price) }} ر.س</div>
+          <div class="product-price">{{ "%.3f"|format(product.price) }} ر.ع</div>
           <div class="add-ctrl"
                data-product-id="{{ product.id }}"
                data-name-ar="{{ product.name_ar }}"
@@ -90,7 +90,7 @@
     <div class="cart-count-badge" id="cartCount">0</div>
     <span style="font-size:.9rem;">عناصر في السلة</span>
   </div>
-  <div class="cart-total" id="cartTotal">0.000 ر.س</div>
+  <div class="cart-total" id="cartTotal">0.000 ر.ع</div>
   <button class="cart-btn" onclick="openOrderModal()">عرض السلة 🛒</button>
 </div>
 

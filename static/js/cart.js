@@ -37,7 +37,7 @@ function updateCartBar() {
   const count = cartCount();
   const bar = document.getElementById('cartBar');
   document.getElementById('cartCount').textContent = count;
-  document.getElementById('cartTotal').textContent = cartTotal().toFixed(3) + ' ر.س';
+  document.getElementById('cartTotal').textContent = cartTotal().toFixed(3) + ' ر.ع';
   bar.classList.toggle('visible', count > 0);
 }
 
@@ -105,7 +105,7 @@ function openProductSheet(id, nameAr, nameEn, price, imgSrc, descAr) {
         <div style="font-size:1.15rem;font-weight:800;color:var(--theme-text-primary,#1a3a35);">${nameAr}</div>
         <div style="font-size:.82rem;color:#94A3B8;margin-bottom:.35rem;">${nameEn}</div>
         ${descAr ? `<div style="font-size:.83rem;color:var(--theme-text-secondary,#475569);line-height:1.6;margin-bottom:.6rem;">${descAr}</div>` : ''}
-        <div style="font-size:1.4rem;font-weight:900;color:var(--primary);margin-bottom:1.1rem;">${parseFloat(price).toFixed(3)} ر.س</div>
+        <div style="font-size:1.4rem;font-weight:900;color:var(--primary);margin-bottom:1.1rem;">${parseFloat(price).toFixed(3)} ر.ع</div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
           <div style="display:flex;align-items:center;gap:.6rem;background:var(--theme-bg-page,#f8fafc);border-radius:12px;padding:.4rem .6rem;border:2px solid var(--theme-border,#e2e8f0);">
@@ -115,7 +115,7 @@ function openProductSheet(id, nameAr, nameEn, price, imgSrc, descAr) {
           </div>
           <button onclick="addToCart(${id}, ${JSON.stringify(nameAr)}, ${JSON.stringify(nameEn)}, ${price}, window._sheetQty||1)"
                   style="flex:1;padding:.75rem;background:var(--primary);color:white;border:none;border-radius:12px;font-family:'Cairo',sans-serif;font-weight:800;font-size:1rem;cursor:pointer;">
-            أضف للسلة &nbsp;<span id="sheetBtnTotal">${parseFloat(price).toFixed(3)} ر.س</span>
+            أضف للسلة &nbsp;<span id="sheetBtnTotal">${parseFloat(price).toFixed(3)} ر.ع</span>
           </button>
         </div>
       </div>
@@ -133,7 +133,7 @@ function sheetQtyChange(delta) {
   document.getElementById('sheetQtyVal').textContent = window._sheetQty;
   document.getElementById('sheetMinus').disabled = window._sheetQty <= 1;
   document.getElementById('sheetBtnTotal').textContent =
-    (window._sheetPrice * window._sheetQty).toFixed(3) + ' ر.س';
+    (window._sheetPrice * window._sheetQty).toFixed(3) + ' ر.ع';
 }
 
 function closeProductSheet() {
@@ -227,7 +227,7 @@ function renderCartStep(body) {
                 <span style="font-weight:800;min-width:22px;text-align:center;">${item.qty}</span>
                 <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
               </div>
-              <div class="cart-item-price" style="min-width:70px;text-align:left;">${(item.price * item.qty).toFixed(3)} ر.س</div>
+              <div class="cart-item-price" style="min-width:70px;text-align:left;">${(item.price * item.qty).toFixed(3)} ر.ع</div>
             </div>
           </div>`).join('')}
     </div>
@@ -235,7 +235,7 @@ function renderCartStep(body) {
     ${!empty ? `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 0;border-top:2px solid var(--theme-border,#e2e8f0);margin-top:.5rem;">
       <span style="font-weight:700;">المجموع</span>
-      <span style="font-weight:900;font-size:1.15rem;color:var(--primary);">${cartTotal().toFixed(3)} ر.س</span>
+      <span style="font-weight:900;font-size:1.15rem;color:var(--primary);">${cartTotal().toFixed(3)} ر.ع</span>
     </div>
     <button class="submit-order-btn" onclick="goStep(2)" style="margin-top:.75rem;">
       التالي: بيانات السيارة ←
@@ -315,11 +315,11 @@ function renderInvoiceStep(body) {
               <span style="font-weight:700;font-size:.9rem;">${item.nameAr}</span>
               <span style="color:#94A3B8;font-size:.8rem;"> × ${item.qty}</span>
             </div>
-            <span style="font-weight:700;color:var(--primary);">${(item.price * item.qty).toFixed(3)} ر.س</span>
+            <span style="font-weight:700;color:var(--primary);">${(item.price * item.qty).toFixed(3)} ر.ع</span>
           </div>`).join('')}
         <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0 0;margin-top:.25rem;">
           <span style="font-weight:800;font-size:.95rem;">الإجمالي</span>
-          <span style="font-weight:900;font-size:1.4rem;color:var(--primary);">${total.toFixed(3)} ر.س</span>
+          <span style="font-weight:900;font-size:1.4rem;color:var(--primary);">${total.toFixed(3)} ر.ع</span>
         </div>
       </div>
 

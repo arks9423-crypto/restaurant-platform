@@ -74,6 +74,15 @@ def place_order(slug):
     return jsonify({"success": True, "order_number": order_number})
 
 
+@orders_bp.route("/order/status/<order_number>")
+def order_status(slug, order_number):
+    restaurant = get_restaurant_or_404(slug)
+    order = Order.query.filter_by(
+        order_number=order_number, restaurant_id=restaurant.id
+    ).first_or_404()
+    return jsonify({"status": order.status})
+
+
 @orders_bp.route("/order/confirm/<order_number>")
 def confirm(slug, order_number):
     restaurant = get_restaurant_or_404(slug)

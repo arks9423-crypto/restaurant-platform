@@ -46,7 +46,7 @@
     <div class="order-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div class="order-number">{{ order.order_number }}</div>
-        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.س</div>
+        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.ع</div>
       </div>
       <div class="order-car">🚗 {{ order.car_color }} — {{ order.car_plate }}{% if order.car_model %} ({{ order.car_model }}){% endif %}</div>
       <div class="order-items">
@@ -76,7 +76,7 @@
     <div class="order-card" style="border-right-color:#3B82F6;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div class="order-number">{{ order.order_number }}</div>
-        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.س</div>
+        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.ع</div>
       </div>
       <div class="order-car">🚗 {{ order.car_color }} — {{ order.car_plate }}</div>
       <div class="order-items">
@@ -109,7 +109,7 @@
     <div class="order-card" style="border-right-color:#22C55E;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div class="order-number">{{ order.order_number }}</div>
-        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.س</div>
+        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.ع</div>
       </div>
       <div class="order-car">🚗 {{ order.car_color }} — {{ order.car_plate }}{% if order.car_model %} ({{ order.car_model }}){% endif %}</div>
       <div class="order-actions">
@@ -140,7 +140,7 @@
         <tr>
           <td style="font-weight:700;color:var(--secondary);">{{ order.order_number }}</td>
           <td>{{ order.car_color }} — {{ order.car_plate }}</td>
-          <td style="font-weight:700;color:var(--primary);">{{ "%.3f"|format(order.total_amount) }} ر.س</td>
+          <td style="font-weight:700;color:var(--primary);">{{ "%.3f"|format(order.total_amount) }} ر.ع</td>
           <td style="font-size:.78rem;color:#94A3B8;">{{ order.created_at.strftime('%H:%M') }}</td>
         </tr>
         {% endfor %}
@@ -150,5 +150,36 @@
 </div>
 {% endif %}
 
-<script>setTimeout(() => location.reload(), 30000);</script>
+<script>
+// ─── Sound notification for new orders ───────────────────────────────────────
+function playNewOrderSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.28, 0.56].forEach(delay => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.5, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.25);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.25);
+    });
+  } catch(e) {}
+}
+
+const SNAP_KEY = 'pendingSnap_{{ slug }}';
+const currPending = {{ pending|length }};
+const prevPending = localStorage.getItem(SNAP_KEY);
+
+if (prevPending !== null && currPending > parseInt(prevPending)) {
+  playNewOrderSound();
+}
+localStorage.setItem(SNAP_KEY, currPending);
+
+// ─── Auto-refresh every 20 seconds ───────────────────────────────────────────
+setTimeout(() => location.reload(), 20000);
+</script>
 {% endblock %}

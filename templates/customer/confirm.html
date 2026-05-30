@@ -42,12 +42,12 @@
       <div style="font-weight:700;font-size:.9rem;">{{ item.product_name_ar }}</div>
       <div style="font-size:.75rem;color:#94A3B8;">× {{ item.quantity }}</div>
     </div>
-    <div style="font-weight:700;color:var(--primary);">{{ "%.3f"|format(item.unit_price * item.quantity) }} ر.س</div>
+    <div style="font-weight:700;color:var(--primary);">{{ "%.3f"|format(item.unit_price * item.quantity) }} ر.ع</div>
   </div>
   {% endfor %}
   <div style="display:flex;justify-content:space-between;padding:.75rem 0 0;font-size:1.05rem;">
     <strong>الإجمالي</strong>
-    <strong style="color:var(--primary);font-size:1.3rem;">{{ "%.3f"|format(order.total_amount) }} ر.س</strong>
+    <strong style="color:var(--primary);font-size:1.3rem;">{{ "%.3f"|format(order.total_amount) }} ر.ع</strong>
   </div>
 </div>
 
@@ -63,5 +63,59 @@
 </div>
 
 <a href="{{ url_for('menu.menu_page', slug=slug) }}" class="back-btn">← العودة للمنيو</a>
+
+<!-- Ready notification banner (hidden by default) -->
+<div id="readyBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;
+     background:linear-gradient(135deg,#22C55E,#16A34A);color:white;text-align:center;
+     padding:1.1rem;font-size:1.1rem;font-weight:800;box-shadow:0 4px 20px rgba(0,0,0,.2);
+     animation:slideDown .4s ease;">
+  ✅ طلبك جاهز! تفضل استلمه 🚗
+</div>
+<style>
+@keyframes slideDown { from { transform:translateY(-100%); } to { transform:translateY(0); } }
+</style>
+
+<script>
+{% if order.status not in ['ready', 'delivered'] %}
+(function() {
+  const ORDER_NUMBER = {{ order.order_number|tojson }};
+  const SLUG = {{ slug|tojson }};
+  let notified = false;
+
+  function playReadySound() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.4, ctx.currentTime + i * 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.4);
+        osc.start(ctx.currentTime + i * 0.18);
+        osc.stop(ctx.currentTime + i * 0.18 + 0.4);
+      });
+    } catch(e) {}
+  }
+
+  function checkStatus() {
+    if (notified) return;
+    fetch(`/r/${SLUG}/order/status/${ORDER_NUMBER}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'ready' || data.status === 'delivered') {
+          notified = true;
+          playReadySound();
+          document.getElementById('readyBanner').style.display = 'block';
+        }
+      }).catch(() => {});
+  }
+
+  setInterval(checkStatus, 10000);
+})();
+{% endif %}
+</script>
 
 {% endblock %}
