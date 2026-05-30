@@ -27,8 +27,8 @@ def place_order(slug):
     notes = (data.get("notes") or "").strip() or None
     cart = data.get("cart", [])
 
-    if not car_plate or not car_color:
-        return jsonify({"success": False, "message": "رقم اللوحة ولون السيارة مطلوبان"}), 400
+    if not car_plate:
+        return jsonify({"success": False, "message": "رقم اللوحة مطلوب"}), 400
     if not cart:
         return jsonify({"success": False, "message": "السلة فارغة"}), 400
 
