@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل مطعم جديد — QRMenu</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/platform.css') }}">
+</head>
+<body class="register-page">
+  <nav class="plat-nav">
+    <a href="/" class="plat-logo">QR<span>Menu</span></a>
+  </nav>
+
+  <div class="register-container">
+    <div class="register-header">
+      <h1>سجّل مطعمك 🍽️</h1>
+      <p>Register your restaurant | أنشئ حسابك مجاناً</p>
+    </div>
+
+    {% if errors %}
+    <ul class="error-list">
+      {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="register-card">
+      <form method="POST" enctype="multipart/form-data">
+
+        <div class="reg-section-title">معلومات المطعم | Restaurant Info</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">اسم المطعم بالعربي *</label>
+            <input class="form-input" type="text" name="name_ar" required
+                   value="{{ form.get('name_ar','') }}" placeholder="مثال: بيت البرجر">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Restaurant Name (English) *</label>
+            <input class="form-input" type="text" name="name_en" id="nameEnInput" required
+                   value="{{ form.get('name_en','') }}" placeholder="e.g. Burger House">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">معرّف الموقع (Slug) * — سيكون عنوان موقعك</label>
+          <div class="slug-row">
+            <span class="slug-prefix">qrmenu.com/r/</span>
+            <input class="form-input" type="text" name="slug" id="slugInput" required
+                   value="{{ form.get('slug','') }}" placeholder="burger-house"
+                   pattern="[a-z0-9][a-z0-9\-]{1,48}[a-z0-9]"
+                   style="flex:1;">
+          </div>
+          <div id="slugStatus" class="slug-status"></div>
+          <div class="form-hint">أحرف إنجليزية صغيرة وأرقام وشرطات فقط، من 3 إلى 50 حرفاً</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">رقم الهاتف *</label>
+            <input class="form-input" type="tel" name="phone"
+                   value="{{ form.get('phone','') }}" placeholder="+966 5x xxx xxxx">
+          </div>
+          <div class="form-group">
+            <label class="form-label">البريد الإلكتروني *</label>
+            <input class="form-input" type="email" name="email"
+                   value="{{ form.get('email','') }}" placeholder="example@email.com">
+          </div>
+        </div>
+        <div class="form-hint" style="margin-top:-.5rem;margin-bottom:.75rem;">* يجب إدخال رقم الهاتف أو البريد الإلكتروني على الأقل</div>
+
+        <div class="reg-section-title">بيانات الدخول | Login Credentials</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">اسم المستخدم *</label>
+            <input class="form-input" type="text" name="admin_username" required
+                   value="{{ form.get('admin_username','') }}" placeholder="admin" autocomplete="username">
+          </div>
+          <div class="form-group"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">كلمة المرور * (8 أحرف على الأقل)</label>
+            <input class="form-input" type="password" name="admin_password" required
+                   placeholder="••••••••" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">تأكيد كلمة المرور *</label>
+            <input class="form-input" type="password" name="confirm_password" required
+                   placeholder="••••••••" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:.85rem;margin-top:.5rem;font-size:.83rem;color:#1D4ED8;">
+          <strong>ملاحظة:</strong> سيتم مراجعة طلبك وتفعيله خلال 24 ساعة من إدارة المنصة.
+          بعد التفعيل يمكنك الدخول وإضافة منيوك واختيار ثيمك.
+        </div>
+
+        <button type="submit" class="submit-btn">تسجيل المطعم ←</button>
+
+        <p style="text-align:center;font-size:.82rem;color:#94A3B8;margin-top:1rem;">
+          لديك حساب بالفعل؟ ادخل معرّف مطعمك في
+          <code style="background:#F1F5F9;padding:.1rem .4rem;border-radius:4px;">/r/معرفك/admin/login</code>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/platform.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+:root {
+  --theme-bg-page: #F0F7FF;
+  --theme-bg-card: #FFFFFF;
+  --theme-text-primary: #0F172A;
+  --theme-text-secondary: #334155;
+  --theme-hero-gradient: linear-gradient(135deg, #0F172A 0%, #1E3A5F 100%);
+  --theme-badge-bg: rgba(56, 189, 248, 0.15);
+  --theme-badge-text: #0369A1;
+  --theme-shadow: 0 2px 12px rgba(15, 23, 42, 0.12);
+  --theme-border: #BFDBFE;
+}

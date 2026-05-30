@@ -1,0 +1,150 @@
+{% extends "base_admin.html" %}
+{% block title %}الإعدادات{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <span class="page-title">⚙️ إعدادات المطعم</span>
+</div>
+
+<!-- Restaurant Info -->
+<div class="admin-card">
+  <h3>📝 معلومات المطعم</h3>
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="section" value="info">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+      <div class="form-group">
+        <label class="form-label">اسم المطعم بالعربي *</label>
+        <input class="form-control" type="text" name="name_ar" value="{{ restaurant.name_ar }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Restaurant Name (English) *</label>
+        <input class="form-control" type="text" name="name_en" value="{{ restaurant.name_en }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">العنوان بالعربي</label>
+        <input class="form-control" type="text" name="address_ar" value="{{ restaurant.address_ar or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Address (English)</label>
+        <input class="form-control" type="text" name="address_en" value="{{ restaurant.address_en or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">رقم الهاتف</label>
+        <input class="form-control" type="tel" name="phone" value="{{ restaurant.phone or '' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">الشعار (Logo)</label>
+        {% if restaurant.logo_filename %}
+          <img src="{{ url_for('static', filename='uploads/' + slug + '/logos/' + restaurant.logo_filename) }}"
+               style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);margin-bottom:.5rem;display:block;">
+        {% endif %}
+        <input class="form-control" type="file" name="logo" accept="image/*">
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:.5rem;padding-top:1.5rem;">
+        <input type="checkbox" name="is_open" id="is_open" {% if restaurant.is_open %}checked{% endif %}>
+        <label for="is_open" style="font-weight:700;">🟢 المطعم مفتوح (يستقبل الطلبات)</label>
+      </div>
+    </div>
+    <button class="btn btn-primary" type="submit">حفظ المعلومات</button>
+  </form>
+</div>
+
+<!-- Branding & Theme -->
+<div class="admin-card">
+  <h3>🎨 الثيم والألوان</h3>
+  <form method="POST" id="brandingForm">
+    <input type="hidden" name="section" value="branding">
+    <input type="hidden" name="theme_key" id="selectedTheme" value="{{ restaurant.theme_key }}">
+
+    <p style="font-size:.85rem;color:#64748B;margin-bottom:1rem;">اختر ثيماً وخصّص الألوان حسب براندك</p>
+
+    <div class="theme-grid" style="margin-bottom:1.5rem;">
+      {% set themes = [
+        ("amber", "Amber Glow 🔥", "فاست فود وطاقة", "#FFB800", "#009B8D"),
+        ("ocean", "Ocean Dark 🌊", "راقي وعصري", "#38BDF8", "#0F172A"),
+        ("rose",  "Rose Garden 🌹", "كافيه وحلويات", "#F43F5E", "#881337"),
+        ("slate", "Slate Pro 💼", "رسمي واحترافي", "#6366F1", "#334155"),
+      ] %}
+      {% for key, name, desc, pri, sec in themes %}
+      <div class="theme-card {% if restaurant.theme_key == key %}selected{% endif %}"
+           onclick="selectTheme('{{ key }}', '{{ pri }}', '{{ sec }}')">
+        <div class="theme-swatches">
+          <div class="swatch" style="background:{{ pri }};"></div>
+          <div class="swatch" style="background:{{ sec }};"></div>
+        </div>
+        <div class="theme-name">{{ name }}</div>
+        <div class="theme-desc">{{ desc }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;">
+      <div class="form-group">
+        <label class="form-label">اللون الأساسي (الأزرار والأسعار)</label>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <input type="color" name="primary_color" id="primaryColorInput" value="{{ restaurant.primary_color }}"
+                 style="width:44px;height:44px;border-radius:8px;border:2px solid #E2E8F0;cursor:pointer;">
+          <input class="form-control" type="text" id="primaryColorText" value="{{ restaurant.primary_color }}"
+                 style="flex:1;" oninput="document.getElementById('primaryColorInput').value=this.value">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">اللون الثانوي (الهيدر والشريط الجانبي)</label>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <input type="color" name="secondary_color" id="secondaryColorInput" value="{{ restaurant.secondary_color }}"
+                 style="width:44px;height:44px;border-radius:8px;border:2px solid #E2E8F0;cursor:pointer;">
+          <input class="form-control" type="text" id="secondaryColorText" value="{{ restaurant.secondary_color }}"
+                 style="flex:1;" oninput="document.getElementById('secondaryColorInput').value=this.value">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">حفظ الثيم والألوان</button>
+  </form>
+</div>
+
+<!-- Credentials -->
+<div class="admin-card">
+  <h3>🔒 بيانات الدخول</h3>
+  <form method="POST">
+    <input type="hidden" name="section" value="credentials">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+      <div class="form-group">
+        <label class="form-label">اسم المستخدم الجديد (اتركه فارغاً للإبقاء على الحالي)</label>
+        <input class="form-control" type="text" name="new_username" placeholder="{{ restaurant.admin_username }}">
+      </div>
+      <div></div>
+      <div class="form-group">
+        <label class="form-label">كلمة المرور الجديدة</label>
+        <input class="form-control" type="password" name="new_password" placeholder="اتركه فارغاً للإبقاء">
+      </div>
+      <div class="form-group">
+        <label class="form-label">تأكيد كلمة المرور</label>
+        <input class="form-control" type="password" name="confirm_password" placeholder="••••••••">
+      </div>
+    </div>
+    <button class="btn btn-secondary" type="submit">تحديث بيانات الدخول</button>
+  </form>
+</div>
+
+<script>
+const themeDefaults = {{ theme_defaults|tojson }};
+
+function selectTheme(key, pri, sec) {
+  document.getElementById('selectedTheme').value = key;
+  document.getElementById('primaryColorInput').value = pri;
+  document.getElementById('primaryColorText').value = pri;
+  document.getElementById('secondaryColorInput').value = sec;
+  document.getElementById('secondaryColorText').value = sec;
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+document.getElementById('primaryColorInput').addEventListener('input', function() {
+  document.getElementById('primaryColorText').value = this.value;
+});
+document.getElementById('secondaryColorInput').addEventListener('input', function() {
+  document.getElementById('secondaryColorText').value = this.value;
+});
+</script>
+{% endblock %}

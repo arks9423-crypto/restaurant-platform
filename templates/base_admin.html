@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}لوحة التحكم{% endblock %} — {{ restaurant.name_ar }}</title>
+  <style>:root { --primary: {{ restaurant.primary_color }}; --secondary: {{ restaurant.secondary_color }}; }</style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/theme_' + restaurant.theme_key + '.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body class="admin-body">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      {% if restaurant.logo_filename %}
+        <img src="{{ url_for('static', filename='uploads/' + slug + '/logos/' + restaurant.logo_filename) }}"
+             style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4);margin-bottom:.5rem;">
+      {% endif %}
+      <h2>{{ restaurant.name_ar }}</h2>
+      <p>{{ restaurant.name_en }}</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('admin.dashboard', slug=slug) }}"
+         class="sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+        <span class="icon">📋</span> الطلبات
+      </a>
+      <a href="{{ url_for('admin.products', slug=slug) }}"
+         class="sidebar-link {% if request.endpoint == 'admin.products' %}active{% endif %}">
+        <span class="icon">🍔</span> المنتجات
+      </a>
+      <a href="{{ url_for('admin.categories', slug=slug) }}"
+         class="sidebar-link {% if request.endpoint == 'admin.categories' %}active{% endif %}">
+        <span class="icon">📂</span> الأقسام
+      </a>
+      <a href="{{ url_for('admin.settings', slug=slug) }}"
+         class="sidebar-link {% if request.endpoint == 'admin.settings' %}active{% endif %}">
+        <span class="icon">⚙️</span> الإعدادات
+      </a>
+      <a href="{{ url_for('admin.qrcode_page', slug=slug) }}"
+         class="sidebar-link {% if request.endpoint == 'admin.qrcode_page' %}active{% endif %}">
+        <span class="icon">📲</span> QR Code
+      </a>
+      <a href="{{ url_for('menu.menu_page', slug=slug) }}" target="_blank" class="sidebar-link">
+        <span class="icon">👁️</span> عرض الموقع
+      </a>
+    </nav>
+    <div style="padding:1rem 1.2rem;border-top:1px solid rgba(255,255,255,.15);">
+      <a href="{{ url_for('auth.logout', slug=slug) }}"
+         style="color:rgba(255,255,255,.6);font-size:.82rem;text-decoration:none;">تسجيل الخروج</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QRMenu — منصة المطاعم الرقمية</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/platform.css') }}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="plat-nav">
+  <a href="/" class="plat-logo">QR<span>Menu</span></a>
+  <div class="plat-nav-links">
+    <a href="#how" class="plat-nav-link">كيف يعمل؟</a>
+    <a href="#features" class="plat-nav-link">المميزات</a>
+    <a href="#themes" class="plat-nav-link">الثيمات</a>
+    <a href="{{ url_for('platform.unified_login') }}"
+       style="color:var(--plat-muted);text-decoration:none;font-weight:700;font-size:.9rem;padding:.45rem .9rem;border-radius:8px;border:2px solid var(--plat-border);transition:all .2s;"
+       onmouseover="this.style.borderColor='#6366F1';this.style.color='#6366F1'"
+       onmouseout="this.style.borderColor='var(--plat-border)';this.style.color='var(--plat-muted)'">
+      تسجيل الدخول
+    </a>
+    <a href="{{ url_for('platform.register') }}" class="plat-nav-cta">سجّل مطعمك</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-badge">🚀 مجاناً للأبد — لا بطاقة ائتمان</span>
+    <h1>امنح مطعمك<br><span>هويته الرقمية</span></h1>
+    <p class="hero-sub">
+      منصة QRMenu تُتيح لأي مطعم إنشاء موقعه الخاص مع منيو رقمي وQR code فريد.<br>
+      الزبائن يمسحون الكود من الباركن ويطلبون في ثوانٍ.
+      <br><br>
+      Give your restaurant a digital identity with a unique menu and QR code.
+    </p>
+    <div class="hero-cta-group">
+      <a href="{{ url_for('platform.register') }}" class="btn-hero-primary">سجّل مطعمك مجاناً →</a>
+      <a href="{{ url_for('platform.unified_login') }}" class="btn-hero-ghost">تسجيل الدخول</a>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section id="how" style="background:white;">
+  <div class="section-center" style="text-align:center;">
+    <span class="section-tag">الخطوات</span>
+    <h2 class="section-title">كيف يعمل QRMenu؟</h2>
+    <p class="section-sub">ثلاث خطوات بسيطة وتكون جاهزاً لاستقبال الطلبات | Three simple steps to go live</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">١</div>
+        <div class="step-title">سجّل مطعمك</div>
+        <p class="step-desc">أدخل اسم مطعمك واختر معرّفاً فريداً. سيتم مراجعة طلبك وتفعيله خلال 24 ساعة.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">٢</div>
+        <div class="step-title">أضف منيوك واختر ثيمك</div>
+        <p class="step-desc">أضف أصنافك وأسعارها، ارفع الصور، واختر التصميم المناسب لبراندك من 4 ثيمات جاهزة.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">٣</div>
+        <div class="step-title">احصل على QR Code</div>
+        <p class="step-desc">اطبع الكود وعلّقه خارج المحل. الزبائن يمسحونه ويطلبون مباشرة من الباركن.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features" class="features-bg">
+  <div class="section-center" style="text-align:center;">
+    <span class="section-tag" style="background:rgba(99,102,241,.2);color:#A5B4FC;">المميزات</span>
+    <h2 class="section-title">كل ما تحتاجه في مكان واحد</h2>
+    <p class="section-sub">Everything you need in one place</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">منيو رقمي متكامل</div>
+        <p class="feature-desc">أضف أصنافك وأسعارها وصورها. يعمل على جميع الأجهزة.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-title">ثيمات جاهزة للبراند</div>
+        <p class="feature-desc">4 تصاميم احترافية. خصّص ألوانك وشعارك.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚗</div>
+        <div class="feature-title">طلبات كيرب سايد</div>
+        <p class="feature-desc">الزبون يدخل لوحة سيارته ويطلب. الطاقم يوصل للسيارة مباشرة.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📲</div>
+        <div class="feature-title">QR Code خاص بك</div>
+        <p class="feature-desc">كود فريد لكل مطعم. اطبعه واعرضه في أي مكان.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">لوحة تحكم لحظية</div>
+        <p class="feature-desc">تابع الطلبات وحدّث حالتها في الوقت الفعلي.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">حساب محمي لكل مطعم</div>
+        <p class="feature-desc">كل مطعم له حسابه المستقل. بياناتك خاصة بك.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Theme Showcase -->
+<section id="themes" style="background:#F8FAFC;">
+  <div class="section-center" style="text-align:center;">
+    <span class="section-tag">الثيمات</span>
+    <h2 class="section-title">اختر ثيمك المناسب</h2>
+    <p class="section-sub">4 تصاميم احترافية — يمكنك تغييره في أي وقت | 4 professional themes, change anytime</p>
+    <div class="themes-showcase">
+
+      <div class="theme-preview-card">
+        <div class="theme-preview-header" style="background:linear-gradient(135deg,#009B8D,#007A6E);">
+          <h4>Amber Glow 🔥</h4>
+        </div>
+        <div class="theme-preview-body">
+          <div class="preview-item"><span class="preview-name">برجر كلاسيك</span><span class="preview-price" style="color:#FFB800;">5.500</span></div>
+          <div class="preview-item"><span class="preview-name">دجاج مقلي</span><span class="preview-price" style="color:#FFB800;">4.000</span></div>
+        </div>
+        <div class="theme-label" style="background:#009B8D;">مثالي للفاست فود</div>
+      </div>
+
+      <div class="theme-preview-card">
+        <div class="theme-preview-header" style="background:linear-gradient(135deg,#0F172A,#1E3A5F);">
+          <h4>Ocean Dark 🌊</h4>
+        </div>
+        <div class="theme-preview-body">
+          <div class="preview-item"><span class="preview-name">سيباس مشوي</span><span class="preview-price" style="color:#38BDF8;">18.000</span></div>
+          <div class="preview-item"><span class="preview-name">روبيان مقلي</span><span class="preview-price" style="color:#38BDF8;">14.500</span></div>
+        </div>
+        <div class="theme-label" style="background:#0F172A;">للمطاعم الراقية</div>
+      </div>
+
+      <div class="theme-preview-card">
+        <div class="theme-preview-header" style="background:linear-gradient(135deg,#BE123C,#E11D48);">
+          <h4>Rose Garden 🌹</h4>
+        </div>
+        <div class="theme-preview-body">
+          <div class="preview-item"><span class="preview-name">تشيز كيك</span><span class="preview-price" style="color:#F43F5E;">3.500</span></div>
+          <div class="preview-item"><span class="preview-name">كريب نوتيلا</span><span class="preview-price" style="color:#F43F5E;">2.500</span></div>
+        </div>
+        <div class="theme-label" style="background:#881337;">للكافيهات والحلويات</div>
+      </div>
+
+      <div class="theme-preview-card">
+        <div class="theme-preview-header" style="background:linear-gradient(135deg,#334155,#475569);">
+          <h4>Slate Pro 💼</h4>
+        </div>
+        <div class="theme-preview-body">
+          <div class="preview-item"><span class="preview-name">ستيك ريب آي</span><span class="preview-price" style="color:#6366F1;">28.000</span></div>
+          <div class="preview-item"><span class="preview-name">سلطة سيزر</span><span class="preview-price" style="color:#6366F1;">7.500</span></div>
+        </div>
+        <div class="theme-label" style="background:#334155;">للمطاعم الرسمية</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="cta-section">
+  <div class="section-center">
+    <h2>ابدأ الآن — مجاناً للأبد</h2>
+    <p>سجّل مطعمك اليوم واحصل على موقعك الرقمي وQR Code خلال 24 ساعة<br>Register today and go live within 24 hours</p>
+    <a href="{{ url_for('platform.register') }}" class="btn-cta-white">سجّل مطعمك الآن ←</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="plat-footer">
+  <p>© 2025 QRMenu — منصة المطاعم الرقمية &nbsp;|&nbsp; <a href="{{ url_for('platform.unified_login') }}">تسجيل الدخول</a></p>
+</footer>
+
+<script src="{{ url_for('static', filename='js/platform.js') }}"></script>
+</body>
+</html>

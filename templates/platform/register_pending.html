@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>في انتظار الموافقة — QRMenu</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/platform.css') }}">
+</head>
+<body>
+  <div class="pending-page">
+    <div class="pending-card">
+      <div class="pending-icon">⏳</div>
+      <h2>تم استلام طلبك!</h2>
+      <p>
+        شكراً لتسجيلك في QRMenu. سيتم مراجعة طلبك وتفعيل حسابك خلال <strong>24 ساعة</strong>.
+        <br><br>
+        بعد التفعيل، ادخل على لوحة التحكم الخاصة بك عبر الرابط:
+        <br>
+        <code style="display:block;background:#F1F5F9;padding:.5rem .75rem;border-radius:8px;margin-top:.5rem;font-size:.82rem;direction:ltr;text-align:left;">
+          qrmenu.com/r/your-slug/admin/login
+        </code>
+        <br>
+        Your account will be reviewed and activated within 24 hours.
+      </p>
+      <a href="/" class="back-home">العودة للصفحة الرئيسية</a>
+    </div>
+  </div>
+</body>
+</html>

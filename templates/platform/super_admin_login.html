@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة المنصة — QRMenu</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/platform.css') }}">
+</head>
+<body class="sa-body">
+  <div class="sa-login">
+    <div class="sa-login-card">
+      <h2>🛡️ إدارة المنصة</h2>
+      <form method="POST">
+        <div class="form-group">
+          <label class="form-label">اسم المستخدم</label>
+          <input class="form-input" type="text" name="username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label">كلمة المرور</label>
+          <input class="form-input" type="password" name="password" required>
+        </div>
+        {% if error %}<div class="sa-error">{{ error }}</div>{% endif %}
+        <button class="sa-login-btn" type="submit">دخول</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

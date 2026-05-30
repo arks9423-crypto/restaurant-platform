@@ -1,0 +1,67 @@
+{% extends "base_customer.html" %}
+{% block title %}تأكيد الطلب {{ order.order_number }}{% endblock %}
+{% block body %}
+
+<div class="confirm-hero">
+  {% if restaurant.logo_filename %}
+    <img src="{{ url_for('static', filename='uploads/' + slug + '/logos/' + restaurant.logo_filename) }}"
+         style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.4);margin-bottom:.5rem;">
+  {% endif %}
+  <h1 style="font-size:1.2rem;font-weight:800;margin-bottom:.5rem;">{{ restaurant.name_ar }}</h1>
+  <div style="font-size:.85rem;opacity:.8;margin-bottom:.75rem;">تم استلام طلبك ✅</div>
+  <div class="confirm-number">{{ order.order_number }}</div>
+  <div style="font-size:.8rem;opacity:.7;margin-top:.3rem;">احتفظ بهذا الرقم</div>
+</div>
+
+<!-- Car Details -->
+<div class="confirm-card">
+  <h3>🚗 بيانات السيارة</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;font-size:.88rem;">
+    <div><span style="color:#94A3B8;">اللوحة:</span> <strong>{{ order.car_plate }}</strong></div>
+    <div><span style="color:#94A3B8;">اللون:</span> <strong>{{ order.car_color }}</strong></div>
+    {% if order.car_model %}
+    <div><span style="color:#94A3B8;">الموديل:</span> <strong>{{ order.car_model }}</strong></div>
+    {% endif %}
+    {% if order.parking_spot %}
+    <div><span style="color:#94A3B8;">الموقف:</span> <strong>{{ order.parking_spot }}</strong></div>
+    {% endif %}
+  </div>
+  {% if order.notes %}
+  <div style="margin-top:.75rem;padding:.5rem .75rem;background:#FEF9C3;border-radius:8px;font-size:.82rem;">
+    💬 {{ order.notes }}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Order Items -->
+<div class="confirm-card">
+  <h3>🛒 تفاصيل الطلب</h3>
+  {% for item in order.items %}
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--theme-border,#e2e8f0);">
+    <div>
+      <div style="font-weight:700;font-size:.9rem;">{{ item.product_name_ar }}</div>
+      <div style="font-size:.75rem;color:#94A3B8;">× {{ item.quantity }}</div>
+    </div>
+    <div style="font-weight:700;color:var(--primary);">{{ "%.3f"|format(item.unit_price * item.quantity) }} ر.س</div>
+  </div>
+  {% endfor %}
+  <div style="display:flex;justify-content:space-between;padding:.75rem 0 0;font-size:1.05rem;">
+    <strong>الإجمالي</strong>
+    <strong style="color:var(--primary);font-size:1.3rem;">{{ "%.3f"|format(order.total_amount) }} ر.س</strong>
+  </div>
+</div>
+
+<!-- Status -->
+<div class="confirm-card">
+  <h3>📌 حالة الطلب</h3>
+  {% set status_map = {'pending': ('⏳', 'في الانتظار'), 'preparing': ('👨‍🍳', 'قيد التحضير'), 'ready': ('✅', 'جاهز للاستلام'), 'delivered': ('🚀', 'تم التسليم')} %}
+  {% set icon, label = status_map.get(order.status, ('❓', order.status)) %}
+  <span class="status-pill">{{ icon }} {{ label }}</span>
+  <p style="font-size:.82rem;color:#94A3B8;margin-top:.6rem;">
+    سيتم توصيل طلبك إلى سيارتك — انتظر في الباركن
+  </p>
+</div>
+
+<a href="{{ url_for('menu.menu_page', slug=slug) }}" class="back-btn">← العودة للمنيو</a>
+
+{% endblock %}

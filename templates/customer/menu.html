@@ -1,0 +1,146 @@
+{% extends "base_customer.html" %}
+{% block title %}{{ restaurant.name_ar }} — المنيو{% endblock %}
+{% block body %}
+
+<!-- Restaurant Hero Header -->
+<header class="restaurant-hero">
+  <div>
+    {% if restaurant.logo_filename %}
+      <img class="logo"
+           src="{{ url_for('static', filename='uploads/' + slug + '/logos/' + restaurant.logo_filename) }}"
+           alt="{{ restaurant.name_ar }}">
+    {% else %}
+      <div style="font-size:2rem;">🍽️</div>
+    {% endif %}
+    <h1>{{ restaurant.name_ar }}</h1>
+    <div class="subtitle">{{ restaurant.name_en }}</div>
+    {% if restaurant.is_open %}
+      <span class="status-badge status-open">🟢 مفتوح</span>
+    {% else %}
+      <span class="status-badge status-closed">🔴 مغلق مؤقتاً</span>
+    {% endif %}
+  </div>
+</header>
+
+<!-- Category Tabs -->
+{% if categories %}
+<div class="category-tabs">
+  {% for cat in categories if cat.available_products %}
+    <a class="cat-tab" href="#cat-{{ cat.id }}">{{ cat.name_ar }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Products -->
+<div class="products-section">
+  {% for cat in categories if cat.available_products %}
+  <div class="category-section" id="cat-{{ cat.id }}">
+    <h2 class="category-title">
+      {{ cat.name_ar }}
+      <span style="font-size:.75rem;font-weight:400;color:#94A3B8;">{{ cat.name_en }}</span>
+    </h2>
+    <div class="products-grid">
+      {% for product in cat.available_products %}
+      {% set img_src = url_for('static', filename='uploads/' + slug + '/products/' + product.image_filename) if product.image_filename else '' %}
+      <div class="product-card"
+           onclick="openProductSheet({{ product.id }},{{ product.name_ar|tojson }},{{ product.name_en|tojson }},{{ product.price }},{{ img_src|tojson }},{{ (product.description_ar or '')|tojson }})">
+        {% if product.image_filename %}
+          <img class="product-img"
+               src="{{ url_for('static', filename='uploads/' + slug + '/products/' + product.image_filename) }}"
+               alt="{{ product.name_ar }}">
+        {% else %}
+          <div class="product-img-placeholder">🍽️</div>
+        {% endif %}
+        <div class="product-info">
+          <div class="product-name-ar">{{ product.name_ar }}</div>
+          <div class="product-name-en">{{ product.name_en }}</div>
+          {% if product.description_ar %}
+            <div style="font-size:.72rem;color:#94A3B8;margin-top:.15rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+              {{ product.description_ar }}
+            </div>
+          {% endif %}
+          <div class="product-price">{{ "%.3f"|format(product.price) }} ر.س</div>
+          <div class="add-ctrl"
+               data-product-id="{{ product.id }}"
+               data-name-ar="{{ product.name_ar }}"
+               data-name-en="{{ product.name_en }}"
+               data-price="{{ product.price }}">
+            <button class="add-btn" onclick="event.stopPropagation(); ctrlAdd(this.closest('.add-ctrl'))">
+              + أضف
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:3rem 1rem;color:#94A3B8;">
+    <div style="font-size:3rem;margin-bottom:.75rem;">🍽️</div>
+    <p style="font-size:.95rem;">لا توجد منتجات متاحة حالياً</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Floating Cart Bar -->
+<div class="cart-bar" id="cartBar">
+  <div class="cart-info">
+    <div class="cart-count-badge" id="cartCount">0</div>
+    <span style="font-size:.9rem;">عناصر في السلة</span>
+  </div>
+  <div class="cart-total" id="cartTotal">0.000 ر.س</div>
+  <button class="cart-btn" onclick="openOrderModal()">عرض السلة 🛒</button>
+</div>
+
+<!-- Product Detail Sheet -->
+<div class="modal-overlay" id="productSheet" style="align-items:flex-end;">
+  <div id="productSheetInner" style="width:100%;max-width:500px;"></div>
+</div>
+
+<!-- Order Modal (3 steps) -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal-sheet" style="position:relative;">
+    <button class="modal-close" onclick="closeOrderModal()">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<style>
+/* Product sheet inner styles */
+#productSheet .product-sheet-inner {
+  background: white;
+  border-radius: 20px 20px 0 0;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp .28s ease;
+  width: 100%;
+}
+/* active tab highlight */
+.cat-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+</style>
+
+<script>const RESTAURANT_SLUG = {{ slug|tojson }};</script>
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+
+<script>
+// Highlight active category tab on scroll
+const sections = document.querySelectorAll('.category-section');
+const tabs = document.querySelectorAll('.cat-tab');
+const offset = 160;
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - offset) current = s.id;
+  });
+  tabs.forEach(t => {
+    t.classList.toggle('active', t.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إيصال طلب {{ order.order_number }}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      background: white;
+      padding: 20px;
+      max-width: 380px;
+      margin: 0 auto;
+    }
+    .receipt-header { text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 12px; margin-bottom: 12px; }
+    .receipt-header h1 { font-size: 1.3rem; font-weight: 900; }
+    .receipt-header p { font-size: .8rem; color: #666; margin-top: 2px; }
+    .order-num { text-align: center; font-size: 1.6rem; font-weight: 900; letter-spacing: 2px; margin: 8px 0; }
+    .section { border-bottom: 1px dashed #ccc; padding: 10px 0; }
+    .section-title { font-size: .7rem; font-weight: 700; text-transform: uppercase; color: #999; margin-bottom: 6px; letter-spacing: 1px; }
+    .car-info { font-size: .95rem; font-weight: 700; }
+    .car-sub { font-size: .8rem; color: #555; margin-top: 2px; }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 4px 0; font-size: .88rem; }
+    td:last-child { text-align: left; font-weight: 700; }
+    .total-row td { font-size: 1rem; font-weight: 900; padding-top: 8px; border-top: 1px solid #ccc; }
+    .receipt-footer { text-align: center; margin-top: 14px; font-size: .75rem; color: #999; }
+    .notes-box { background: #fffbcc; border: 1px solid #f0e040; border-radius: 4px; padding: 6px 8px; font-size: .83rem; margin-top: 4px; }
+    .print-btn { display: block; text-align: center; margin: 20px auto 0; padding: .6rem 2rem; background: #1E293B; color: white; border: none; border-radius: 8px; font-size: .9rem; font-weight: 700; cursor: pointer; }
+    @media print {
+      .print-btn { display: none; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="receipt-header">
+  <h1>{{ restaurant.name_ar }}</h1>
+  <p>{{ restaurant.name_en }}</p>
+  {% if restaurant.phone %}<p>📞 {{ restaurant.phone }}</p>{% endif %}
+</div>
+
+<div class="order-num"># {{ order.order_number }}</div>
+
+<div class="section">
+  <div class="section-title">معلومات السيارة</div>
+  <div class="car-info">🚗 {{ order.car_color }} — {{ order.car_plate }}</div>
+  {% if order.car_model %}
+    <div class="car-sub">{{ order.car_model }}</div>
+  {% endif %}
+</div>
+
+<div class="section">
+  <div class="section-title">الطلبات</div>
+  <table>
+    {% for item in order.items %}
+    <tr>
+      <td>{{ item.product_name_ar }} × {{ item.quantity }}</td>
+      <td>{{ "%.3f"|format(item.unit_price * item.quantity) }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="total-row">
+      <td>المجموع</td>
+      <td>{{ "%.3f"|format(order.total_amount) }} ر.س</td>
+    </tr>
+  </table>
+</div>
+
+{% if order.notes %}
+<div class="section">
+  <div class="section-title">ملاحظات</div>
+  <div class="notes-box">{{ order.notes }}</div>
+</div>
+{% endif %}
+
+<div class="receipt-footer">
+  <p>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+  <p style="margin-top:4px;">شكراً لزيارتكم — QRMenu</p>
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨️ طباعة الإيصال</button>
+
+<script>window.onload = () => window.print();</script>
+</body>
+</html>

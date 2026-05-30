@@ -1,0 +1,105 @@
+{% extends "base_admin.html" %}
+{% block title %}الأقسام{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <span class="page-title">📂 إدارة الأقسام</span>
+</div>
+
+<!-- Add Form -->
+<div class="admin-card">
+  <h3>إضافة قسم جديد</h3>
+  <form method="POST">
+    <input type="hidden" name="action" value="add">
+    <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:.75rem;align-items:end;">
+      <div>
+        <label class="form-label">الاسم بالعربي *</label>
+        <input class="form-control" type="text" name="name_ar" required placeholder="مثال: الوجبات الرئيسية">
+      </div>
+      <div>
+        <label class="form-label">Name in English *</label>
+        <input class="form-control" type="text" name="name_en" required placeholder="e.g. Main Dishes">
+      </div>
+      <div>
+        <label class="form-label">الترتيب</label>
+        <input class="form-control" type="number" name="sort_order" value="0" style="width:80px;">
+      </div>
+      <div>
+        <button class="btn btn-primary" type="submit">إضافة</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Categories List -->
+<div class="admin-card">
+  <h3>الأقسام ({{ categories|length }})</h3>
+  {% if categories %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>الاسم بالعربي</th><th>English Name</th><th>الترتيب</th><th>المنتجات</th><th>تعديل / حذف</th></tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td style="font-weight:700;">{{ cat.name_ar }}</td>
+          <td>{{ cat.name_en }}</td>
+          <td>{{ cat.sort_order }}</td>
+          <td>{{ cat.products|length }}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="openEdit({{ cat.id }}, '{{ cat.name_ar }}', '{{ cat.name_en }}', {{ cat.sort_order }})">تعديل</button>
+            <form method="POST" style="display:inline;" onsubmit="return confirm('حذف القسم وكل منتجاته؟')">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="cat_id" value="{{ cat.id }}">
+              <button class="btn btn-sm btn-danger" type="submit">حذف</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="text-align:center;color:#94A3B8;padding:1.5rem;">لا توجد أقسام بعد — أضف قسماً أولاً</p>
+  {% endif %}
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:16px;padding:1.5rem;width:480px;max-width:95%;">
+    <h3 style="margin-bottom:1rem;">تعديل القسم</h3>
+    <form method="POST">
+      <input type="hidden" name="action" value="edit">
+      <input type="hidden" name="cat_id" id="editCatId">
+      <div class="form-group">
+        <label class="form-label">الاسم بالعربي</label>
+        <input class="form-control" type="text" name="name_ar" id="editNameAr" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Name in English</label>
+        <input class="form-control" type="text" name="name_en" id="editNameEn" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">الترتيب</label>
+        <input class="form-control" type="number" name="sort_order" id="editSort">
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <button class="btn btn-primary" type="submit">حفظ</button>
+        <button class="btn" type="button" onclick="closeEdit()" style="background:#F1F5F9;color:#475569;">إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEdit(id, ar, en, sort) {
+  document.getElementById('editCatId').value = id;
+  document.getElementById('editNameAr').value = ar;
+  document.getElementById('editNameEn').value = en;
+  document.getElementById('editSort').value = sort;
+  document.getElementById('editModal').style.display = 'flex';
+}
+function closeEdit() { document.getElementById('editModal').style.display = 'none'; }
+</script>
+{% endblock %}

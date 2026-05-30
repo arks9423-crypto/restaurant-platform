@@ -1,0 +1,154 @@
+{% extends "base_admin.html" %}
+{% block title %}الطلبات{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <span class="page-title">📋 الطلبات الحية</span>
+  <div style="display:flex;align-items:center;gap:.75rem;">
+    <span style="font-size:.8rem;color:#94A3B8;">تحديث تلقائي كل 30 ثانية</span>
+    {% if restaurant.is_open %}
+      <span style="background:#D1FAE5;color:#065F46;padding:.25rem .7rem;border-radius:999px;font-size:.78rem;font-weight:700;">🟢 مفتوح</span>
+    {% else %}
+      <span style="background:#FEE2E2;color:#991B1B;padding:.25rem .7rem;border-radius:999px;font-size:.78rem;font-weight:700;">🔴 مغلق</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-number">{{ pending|length }}</div>
+    <div class="stat-label">طلبات جديدة</div>
+  </div>
+  <div class="stat-card" style="border-top-color:#3B82F6;">
+    <div class="stat-number" style="color:#3B82F6;">{{ preparing|length }}</div>
+    <div class="stat-label">قيد التحضير</div>
+  </div>
+  <div class="stat-card" style="border-top-color:#22C55E;">
+    <div class="stat-number" style="color:#22C55E;">{{ ready|length }}</div>
+    <div class="stat-label">جاهزة للتسليم</div>
+  </div>
+  <div class="stat-card" style="border-top-color:#94A3B8;">
+    <div class="stat-number" style="color:#94A3B8;">{{ recent_delivered|length }}</div>
+    <div class="stat-label">مُسلّمة اليوم</div>
+  </div>
+</div>
+
+<!-- Active Orders Grid -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem;">
+
+  <!-- Pending -->
+  <div class="admin-card">
+    <h3 style="color:#92400E;background:#FEF3C7;padding:.5rem .75rem;border-radius:8px;margin:-1.5rem -1.5rem 1rem;">
+      ⏳ جديدة ({{ pending|length }})
+    </h3>
+    {% for order in pending %}
+    <div class="order-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="order-number">{{ order.order_number }}</div>
+        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.س</div>
+      </div>
+      <div class="order-car">🚗 {{ order.car_color }} — {{ order.car_plate }}{% if order.car_model %} ({{ order.car_model }}){% endif %}</div>
+      <div class="order-items">
+        {% for item in order.items %}{{ item.product_name_ar }} × {{ item.quantity }}{% if not loop.last %}، {% endif %}{% endfor %}
+      </div>
+      {% if order.notes %}<div style="background:#FEF9C3;border-radius:6px;padding:.3rem .6rem;font-size:.78rem;margin-top:.4rem;">💬 {{ order.notes }}</div>{% endif %}
+      <div class="order-actions">
+        <form method="POST" action="{{ url_for('admin.update_order_status', slug=slug, order_id=order.id) }}">
+          <input type="hidden" name="status" value="preparing">
+          <button class="btn btn-sm" style="background:#DBEAFE;color:#1E40AF;">قيد التحضير ▶</button>
+        </form>
+        <a href="{{ url_for('admin.print_order', slug=slug, order_id=order.id) }}" target="_blank"
+           class="btn btn-sm" style="background:#F1F5F9;color:#334155;text-decoration:none;">🖨️</a>
+      </div>
+    </div>
+    {% else %}
+    <p style="text-align:center;color:#94A3B8;font-size:.85rem;padding:1rem 0;">لا توجد طلبات جديدة</p>
+    {% endfor %}
+  </div>
+
+  <!-- Preparing -->
+  <div class="admin-card">
+    <h3 style="color:#1E40AF;background:#DBEAFE;padding:.5rem .75rem;border-radius:8px;margin:-1.5rem -1.5rem 1rem;">
+      👨‍🍳 التحضير ({{ preparing|length }})
+    </h3>
+    {% for order in preparing %}
+    <div class="order-card" style="border-right-color:#3B82F6;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="order-number">{{ order.order_number }}</div>
+        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.س</div>
+      </div>
+      <div class="order-car">🚗 {{ order.car_color }} — {{ order.car_plate }}</div>
+      <div class="order-items">
+        {% for item in order.items %}{{ item.product_name_ar }} × {{ item.quantity }}{% if not loop.last %}، {% endif %}{% endfor %}
+      </div>
+      <div class="order-actions">
+        <form method="POST" action="{{ url_for('admin.update_order_status', slug=slug, order_id=order.id) }}">
+          <input type="hidden" name="status" value="ready">
+          <button class="btn btn-sm btn-success">جاهز ✓</button>
+        </form>
+        <form method="POST" action="{{ url_for('admin.update_order_status', slug=slug, order_id=order.id) }}">
+          <input type="hidden" name="status" value="pending">
+          <button class="btn btn-sm" style="background:#F1F5F9;color:#475569;">◀ إعادة</button>
+        </form>
+        <a href="{{ url_for('admin.print_order', slug=slug, order_id=order.id) }}" target="_blank"
+           class="btn btn-sm" style="background:#F1F5F9;color:#334155;text-decoration:none;">🖨️</a>
+      </div>
+    </div>
+    {% else %}
+    <p style="text-align:center;color:#94A3B8;font-size:.85rem;padding:1rem 0;">لا توجد طلبات في التحضير</p>
+    {% endfor %}
+  </div>
+
+  <!-- Ready -->
+  <div class="admin-card">
+    <h3 style="color:#065F46;background:#D1FAE5;padding:.5rem .75rem;border-radius:8px;margin:-1.5rem -1.5rem 1rem;">
+      ✅ جاهزة ({{ ready|length }})
+    </h3>
+    {% for order in ready %}
+    <div class="order-card" style="border-right-color:#22C55E;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="order-number">{{ order.order_number }}</div>
+        <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.س</div>
+      </div>
+      <div class="order-car">🚗 {{ order.car_color }} — {{ order.car_plate }}{% if order.car_model %} ({{ order.car_model }}){% endif %}</div>
+      <div class="order-actions">
+        <form method="POST" action="{{ url_for('admin.update_order_status', slug=slug, order_id=order.id) }}">
+          <input type="hidden" name="status" value="delivered">
+          <button class="btn btn-sm btn-secondary">تم التسليم 🚀</button>
+        </form>
+        <a href="{{ url_for('admin.print_order', slug=slug, order_id=order.id) }}" target="_blank"
+           class="btn btn-sm" style="background:#F1F5F9;color:#334155;text-decoration:none;">🖨️</a>
+      </div>
+    </div>
+    {% else %}
+    <p style="text-align:center;color:#94A3B8;font-size:.85rem;padding:1rem 0;">لا توجد طلبات جاهزة</p>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Recent Delivered -->
+{% if recent_delivered %}
+<div class="admin-card">
+  <h3>📦 آخر الطلبات المُسلّمة</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>رقم الطلب</th><th>السيارة</th><th>المجموع</th><th>الوقت</th></tr></thead>
+      <tbody>
+        {% for order in recent_delivered %}
+        <tr>
+          <td style="font-weight:700;color:var(--secondary);">{{ order.order_number }}</td>
+          <td>{{ order.car_color }} — {{ order.car_plate }}</td>
+          <td style="font-weight:700;color:var(--primary);">{{ "%.3f"|format(order.total_amount) }} ر.س</td>
+          <td style="font-size:.78rem;color:#94A3B8;">{{ order.created_at.strftime('%H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<script>setTimeout(() => location.reload(), 30000);</script>
+{% endblock %}

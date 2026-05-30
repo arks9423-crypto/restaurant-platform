@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة إدارة المنصة — QRMenu</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/platform.css') }}">
+</head>
+<body class="sa-body">
+  <nav class="sa-nav">
+    <h1>🛡️ QRMenu — لوحة إدارة المنصة</h1>
+    <a href="{{ url_for('super_admin.logout') }}" style="color:#94A3B8;text-decoration:none;font-size:.85rem;">تسجيل الخروج</a>
+  </nav>
+
+  <div class="sa-content">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div style="background:{% if cat=='success' %}#052E16{% elif cat=='danger' %}#450A0A{% else %}#451A03{% endif %};color:{% if cat=='success' %}#4ADE80{% elif cat=='danger' %}#FCA5A5{% else %}#FCD34D{% endif %};padding:.75rem 1rem;border-radius:10px;margin-bottom:1rem;font-size:.88rem;font-weight:600;">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- Stats -->
+    <div class="sa-stat-grid">
+      <div class="sa-stat">
+        <div class="sa-stat-num">{{ pending|length }}</div>
+        <div class="sa-stat-label">طلبات معلقة</div>
+      </div>
+      <div class="sa-stat">
+        <div class="sa-stat-num">{{ active|length }}</div>
+        <div class="sa-stat-label">مطاعم نشطة</div>
+      </div>
+      <div class="sa-stat">
+        <div class="sa-stat-num">{{ inactive|length }}</div>
+        <div class="sa-stat-label">موقوفة</div>
+      </div>
+      <div class="sa-stat">
+        <div class="sa-stat-num">{{ (pending|length) + (active|length) + (inactive|length) }}</div>
+        <div class="sa-stat-label">إجمالي المطاعم</div>
+      </div>
+    </div>
+
+    <!-- Pending Approval -->
+    {% if pending %}
+    <div class="sa-card">
+      <h3>⏳ طلبات في انتظار الموافقة ({{ pending|length }})</h3>
+      <div style="overflow-x:auto;">
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>المطعم</th>
+              <th>المعرّف</th>
+              <th>الهاتف</th>
+              <th>تاريخ التسجيل</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in pending %}
+            <tr>
+              <td>
+                <div style="font-weight:700;color:#E2E8F0;">{{ r.name_ar }}</div>
+                <div style="font-size:.78rem;color:#94A3B8;">{{ r.name_en }}</div>
+              </td>
+              <td><code style="color:#60A5FA;font-size:.82rem;">{{ r.slug }}</code></td>
+              <td>{{ r.phone or '—' }}</td>
+              <td style="font-size:.78rem;color:#64748B;">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('super_admin.approve', restaurant_id=r.id) }}" style="display:inline;">
+                  <button class="sa-btn sa-btn-approve" type="submit">✓ موافقة</button>
+                </form>
+                <form method="POST" action="{{ url_for('super_admin.reject', restaurant_id=r.id) }}" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من الرفض والحذف؟')">
+                  <button class="sa-btn sa-btn-reject" type="submit">✗ رفض</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Active Restaurants -->
+    <div class="sa-card">
+      <h3>✅ المطاعم النشطة ({{ active|length }})</h3>
+      <div style="overflow-x:auto;">
+        <table class="sa-table">
+          <thead>
+            <tr>
+              <th>المطعم</th>
+              <th>المعرّف</th>
+              <th>الثيم</th>
+              <th>الطلبات</th>
+              <th>تاريخ التسجيل</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in active %}
+            <tr>
+              <td>
+                <div style="font-weight:700;color:#E2E8F0;">{{ r.name_ar }}</div>
+                <div style="font-size:.78rem;color:#94A3B8;">{{ r.name_en }}</div>
+              </td>
+              <td>
+                <a href="/r/{{ r.slug }}/menu" target="_blank" style="color:#60A5FA;font-size:.82rem;font-family:monospace;">{{ r.slug }}</a>
+              </td>
+              <td><span class="sa-badge" style="background:#1E3A5F;color:#93C5FD;">{{ r.theme_key }}</span></td>
+              <td style="font-weight:700;color:#4ADE80;">{{ order_counts.get(r.id, 0) }}</td>
+              <td style="font-size:.78rem;color:#64748B;">{{ r.created_at.strftime('%Y-%m-%d') }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('super_admin.deactivate', restaurant_id=r.id) }}" style="display:inline;">
+                  <button class="sa-btn sa-btn-deactivate" type="submit">إيقاف</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+            {% if not active %}
+            <tr><td colspan="6" style="text-align:center;color:#475569;padding:1.5rem;">لا توجد مطاعم نشطة بعد</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Inactive -->
+    {% if inactive %}
+    <div class="sa-card">
+      <h3>⛔ مطاعم موقوفة ({{ inactive|length }})</h3>
+      <div style="overflow-x:auto;">
+        <table class="sa-table">
+          <thead>
+            <tr><th>المطعم</th><th>المعرّف</th><th>الطلبات</th><th>الإجراء</th></tr>
+          </thead>
+          <tbody>
+            {% for r in inactive %}
+            <tr>
+              <td style="font-weight:700;color:#E2E8F0;">{{ r.name_ar }}</td>
+              <td><code style="color:#94A3B8;font-size:.82rem;">{{ r.slug }}</code></td>
+              <td>{{ order_counts.get(r.id, 0) }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('super_admin.activate', restaurant_id=r.id) }}" style="display:inline;">
+                  <button class="sa-btn sa-btn-activate" type="submit">إعادة تفعيل</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</body>
+</html>
