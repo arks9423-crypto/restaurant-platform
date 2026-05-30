@@ -59,12 +59,14 @@
 
 {% if order.status not in ['ready', 'delivered'] %}
 <div style="text-align:center;padding:1rem 1rem .5rem;">
-  <button id="notifBtn" onclick="enableNotifications()"
-    style="background:var(--primary);color:white;border:none;border-radius:14px;
-           padding:.75rem 1.5rem;font-family:'Cairo',sans-serif;font-weight:800;
-           font-size:.95rem;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.15);width:100%;max-width:320px;">
-    🔔 فعّل إشعار جهوز الطلب
-  </button>
+  <div id="pushSection">
+    <button id="notifBtn" onclick="enableNotifications()"
+      style="background:var(--primary);color:white;border:none;border-radius:14px;
+             padding:.75rem 1.5rem;font-family:'Cairo',sans-serif;font-weight:800;
+             font-size:.95rem;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.15);width:100%;max-width:320px;">
+      🔔 فعّل إشعار جهوز الطلب
+    </button>
+  </div>
   <div id="notifStatus" style="margin-top:.5rem;font-size:.85rem;color:#64748B;"></div>
 </div>
 {% endif %}
@@ -84,6 +86,34 @@
 const ORDER_NUMBER = {{ order.order_number|tojson }};
 const SLUG = {{ slug|tojson }};
 const VAPID_PUBLIC_KEY = {{ config['VAPID_PUBLIC_KEY']|tojson }};
+const PUSH_SUPPORTED = ('serviceWorker' in navigator) && ('PushManager' in window);
+
+// ─── Fallback polling (works on all browsers) ─────────────────────────────────
+let _notified = false;
+function _checkStatus() {
+  if (_notified) return;
+  fetch(`/r/${SLUG}/order/status/${ORDER_NUMBER}`)
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === 'ready' || d.status === 'delivered') {
+        _notified = true;
+        document.getElementById('readyBanner').style.display = 'block';
+        if (navigator.vibrate) navigator.vibrate([300,150,300]);
+      }
+    }).catch(()=>{});
+}
+
+// Start polling automatically for all users
+{% if order.status not in ['ready', 'delivered'] %}
+setInterval(_checkStatus, 6000);
+
+// If browser doesn't support push → hide button, polling is enough
+if (!PUSH_SUPPORTED) {
+  document.getElementById('pushSection').style.display = 'none';
+  document.getElementById('notifStatus').innerHTML =
+    '<span style="color:#22C55E;font-weight:700;">✅ سنبلغك تلقائياً عند جهوز طلبك</span>';
+}
+{% endif %}
 
 function urlBase64ToUint8Array(b) {
   const pad = '='.repeat((4 - b.length % 4) % 4);
