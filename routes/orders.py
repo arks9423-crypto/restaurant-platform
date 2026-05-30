@@ -1,7 +1,8 @@
 import random
 import string
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from models import db, Order, OrderItem, Product
+import json
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app
+from models import db, Order, OrderItem, Product, PushSubscription
 from routes.helpers import get_restaurant_or_404
 
 orders_bp = Blueprint("orders", __name__)
@@ -72,6 +73,44 @@ def place_order(slug):
     db.session.commit()
 
     return jsonify({"success": True, "order_number": order_number})
+
+
+@orders_bp.route("/order/subscribe", methods=["POST"])
+def subscribe_push(slug):
+    data = request.get_json(silent=True) or {}
+    order_number = data.get("order_number", "").strip()
+    sub = data.get("subscription", {})
+    endpoint = sub.get("endpoint", "")
+    keys = sub.get("keys", {})
+    p256dh = keys.get("p256dh", "")
+    auth = keys.get("auth", "")
+    if not all([order_number, endpoint, p256dh, auth]):
+        return jsonify({"ok": False}), 400
+    ps = PushSubscription(order_number=order_number, endpoint=endpoint,
+                          p256dh=p256dh, auth=auth)
+    db.session.add(ps)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+def _send_push(order_number, title, body, url):
+    from pywebpush import webpush, WebPushException
+    subs = PushSubscription.query.filter_by(order_number=order_number).all()
+    private_key = current_app.config.get("VAPID_PRIVATE_KEY", "")
+    email = current_app.config.get("VAPID_EMAIL", "admin@qrmenu.app")
+    if not private_key or not subs:
+        return
+    for ps in subs:
+        try:
+            webpush(
+                subscription_info={"endpoint": ps.endpoint,
+                                   "keys": {"p256dh": ps.p256dh, "auth": ps.auth}},
+                data=json.dumps({"title": title, "body": body, "url": url}),
+                vapid_private_key=private_key,
+                vapid_claims={"sub": f"mailto:{email}"},
+            )
+        except Exception:
+            pass
 
 
 @orders_bp.route("/order/status/<order_number>")

@@ -29,4 +29,8 @@ class Config:
     SUPER_ADMIN_USERNAME = os.environ.get("SUPER_ADMIN_USERNAME", "superadmin")
     SUPER_ADMIN_PASSWORD = os.environ.get("SUPER_ADMIN_PASSWORD", "super123")
 
+    VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+    VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
+    VAPID_EMAIL = os.environ.get("VAPID_EMAIL", "admin@qrmenu.app")
+
     PORT = int(os.environ.get("PORT", 5000))

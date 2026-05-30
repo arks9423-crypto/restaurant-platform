@@ -9,6 +9,10 @@ def create_app():
 
     db.init_app(app)
 
+    @app.context_processor
+    def inject_config():
+        return {"config": app.config}
+
     with app.app_context():
         db.create_all()
         _migrate_db(db)

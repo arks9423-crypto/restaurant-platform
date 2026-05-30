@@ -107,6 +107,16 @@ class Order(db.Model):
                              cascade="all, delete-orphan")
 
 
+class PushSubscription(db.Model):
+    __tablename__ = "push_subscription"
+    id = db.Column(db.Integer, primary_key=True)
+    order_number = db.Column(db.String(20), nullable=False, index=True)
+    endpoint = db.Column(db.Text, nullable=False)
+    p256dh = db.Column(db.Text, nullable=False)
+    auth = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
 class OrderItem(db.Model):
     __tablename__ = "order_item"
     id = db.Column(db.Integer, primary_key=True)

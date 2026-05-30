@@ -56,6 +56,12 @@ def update_order_status(slug, order_id):
     if new_status in valid:
         order.status = new_status
         db.session.commit()
+        if new_status == "ready":
+            from routes.orders import _send_push
+            confirm_url = request.host_url.rstrip("/") + url_for(
+                "orders.confirm", slug=slug, order_number=order.order_number)
+            _send_push(order.order_number, "✅ طلبك جاهز!",
+                       f"طلب {order.order_number} — تفضل استلمه 🚗", confirm_url)
     return redirect(url_for("admin.dashboard", slug=slug))
 
 
