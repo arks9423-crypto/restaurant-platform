@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>تقرير يومي — {{ restaurant.name_ar }} — {{ report_date }}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      background: #f8fafc;
+      direction: rtl;
+    }
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+    }
+
+    /* Header */
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid #1E293B;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .restaurant-name { font-size: 1.6rem; font-weight: 900; color: #1E293B; }
+    .report-title { font-size: .95rem; color: #64748B; margin-top: .25rem; }
+    .report-date {
+      text-align: left;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1E293B;
+      background: #F1F5F9;
+      padding: .5rem 1rem;
+      border-radius: 8px;
+    }
+
+    /* Summary boxes */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .summary-box {
+      border: 2px solid #E2E8F0;
+      border-radius: 10px;
+      padding: .85rem 1rem;
+      text-align: center;
+    }
+    .summary-box .num { font-size: 1.8rem; font-weight: 900; color: #1E293B; }
+    .summary-box .lbl { font-size: .78rem; color: #64748B; margin-top: .2rem; }
+    .summary-box.revenue { border-color: #22C55E; background: #F0FDF4; }
+    .summary-box.revenue .num { color: #15803D; }
+
+    /* Orders table */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1E293B;
+      margin-bottom: .75rem;
+      padding-bottom: .4rem;
+      border-bottom: 2px solid #E2E8F0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+      font-size: .85rem;
+    }
+    thead th {
+      background: #1E293B;
+      color: white;
+      padding: .6rem .75rem;
+      text-align: right;
+      font-weight: 700;
+    }
+    tbody tr:nth-child(even) { background: #F8FAFC; }
+    tbody tr:hover { background: #EFF6FF; }
+    td {
+      padding: .55rem .75rem;
+      border-bottom: 1px solid #E2E8F0;
+      vertical-align: top;
+    }
+    .order-num { font-weight: 800; color: #1E293B; }
+    .order-time { color: #64748B; font-size: .78rem; }
+    .order-plate { font-weight: 700; font-family: monospace; }
+    .order-items { color: #475569; line-height: 1.5; }
+    .order-total { font-weight: 900; color: #15803D; white-space: nowrap; }
+    .order-status {
+      padding: .2rem .5rem;
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .s-delivered { background: #D1FAE5; color: #065F46; }
+    .s-ready     { background: #DBEAFE; color: #1E40AF; }
+    .s-preparing { background: #FEF3C7; color: #92400E; }
+    .s-pending   { background: #F1F5F9; color: #475569; }
+
+    /* Total footer */
+    .total-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1E293B;
+      color: white;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-top: 1rem;
+    }
+    .total-footer .label { font-size: 1rem; font-weight: 700; }
+    .total-footer .amount { font-size: 1.6rem; font-weight: 900; color: #4ADE80; }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 3rem; color: #94A3B8; font-size: 1rem; }
+
+    /* Print button */
+    .print-btn {
+      display: block;
+      width: 200px;
+      margin: 1.5rem auto 0;
+      padding: .75rem;
+      background: #1E293B;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    /* Date picker */
+    .date-bar {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1.5rem;
+      background: #F1F5F9;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+    }
+    .date-bar label { font-weight: 700; font-size: .9rem; }
+    .date-bar input { padding: .4rem .6rem; border: 2px solid #CBD5E1; border-radius: 6px; font-size: .9rem; }
+    .date-bar button {
+      padding: .4rem .9rem;
+      background: #1E293B;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    @media print {
+      body { background: white; }
+      .print-btn, .date-bar { display: none; }
+      .page { padding: 0; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Date picker (screen only) -->
+  <div class="date-bar">
+    <label>📅 اختر التاريخ:</label>
+    <input type="date" id="datePicker" value="{{ report_date }}">
+    <button onclick="location.href='?date='+document.getElementById('datePicker').value">عرض</button>
+    <button onclick="window.print()" style="background:#22C55E;margin-right:auto;">🖨️ طباعة / PDF</button>
+  </div>
+
+  <!-- Header -->
+  <div class="report-header">
+    <div>
+      <div class="restaurant-name">{{ restaurant.name_ar }}</div>
+      <div class="report-title">{{ restaurant.name_en }} — تقرير الطلبات اليومية</div>
+    </div>
+    <div class="report-date">
+      📅 {{ report_date.strftime('%Y/%m/%d') }}
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-grid">
+    <div class="summary-box">
+      <div class="num">{{ orders|length }}</div>
+      <div class="lbl">إجمالي الطلبات</div>
+    </div>
+    <div class="summary-box">
+      <div class="num">{{ orders|selectattr('status','eq','delivered')|list|length }}</div>
+      <div class="lbl">طلبات مُسلّمة</div>
+    </div>
+    <div class="summary-box revenue">
+      <div class="num">{{ "%.3f"|format(total_revenue) }}</div>
+      <div class="lbl">إجمالي الإيرادات (ر.ع)</div>
+    </div>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="section-title">📋 تفاصيل جميع الطلبات</div>
+
+  {% if orders %}
+  <table>
+    <thead>
+      <tr>
+        <th>رقم الطلب</th>
+        <th>الوقت</th>
+        <th>لوحة السيارة</th>
+        <th>الطلبات</th>
+        <th>الحالة</th>
+        <th>القيمة</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td><span class="order-num">{{ order.order_number }}</span></td>
+        <td><span class="order-time">{{ order.created_at.strftime('%I:%M %p') }}</span></td>
+        <td><span class="order-plate">{{ order.car_plate }}</span></td>
+        <td>
+          <div class="order-items">
+            {% for item in order.items %}
+              {{ item.product_name_ar }} × {{ item.quantity }}{% if not loop.last %}<br>{% endif %}
+            {% endfor %}
+          </div>
+          {% if order.notes %}
+            <div style="margin-top:.25rem;font-size:.75rem;color:#F59E0B;">💬 {{ order.notes }}</div>
+          {% endif %}
+        </td>
+        <td>
+          {% set sc = {'delivered':'s-delivered','ready':'s-ready','preparing':'s-preparing','pending':'s-pending'} %}
+          {% set sl = {'delivered':'مُسلّم','ready':'جاهز','preparing':'تحضير','pending':'انتظار'} %}
+          <span class="order-status {{ sc.get(order.status,'s-pending') }}">
+            {{ sl.get(order.status, order.status) }}
+          </span>
+        </td>
+        <td><span class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.ع</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Total -->
+  <div class="total-footer">
+    <span class="label">💰 إجمالي إيرادات {{ report_date.strftime('%Y/%m/%d') }}</span>
+    <span class="amount">{{ "%.3f"|format(total_revenue) }} ر.ع</span>
+  </div>
+
+  {% else %}
+  <div class="empty">
+    📭 لا توجد طلبات في هذا اليوم
+  </div>
+  {% endif %}
+
+  <button class="print-btn" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+
+</div>
+</body>
+</html>

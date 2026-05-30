@@ -132,6 +132,20 @@
 
 </div>
 
+<!-- Daily Report -->
+<div class="admin-card" style="margin-bottom:1rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h3 style="margin:0;">📊 ملخص الطلبات اليومية</h3>
+    <a href="{{ url_for('admin.daily_report', slug=slug) }}" target="_blank"
+       class="btn btn-primary" style="text-decoration:none;font-size:.85rem;padding:.45rem 1rem;">
+      🖨️ عرض وطباعة التقرير
+    </a>
+  </div>
+  <p style="font-size:.82rem;color:#94A3B8;margin-top:.4rem;">
+    تقرير يومي كامل بجميع الطلبات والإيرادات — قابل للطباعة وحفظ PDF
+  </p>
+</div>
+
 <!-- Recent Delivered -->
 {% if recent_delivered %}
 <div class="admin-card">

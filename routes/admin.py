@@ -30,6 +30,33 @@ def dashboard(slug):
                            recent_delivered=recent_delivered)
 
 
+@admin_bp.route("/admin/orders/daily-report")
+@login_required
+def daily_report(slug):
+    from datetime import date, datetime
+    restaurant = get_restaurant_or_404(slug)
+    report_date_str = request.args.get("date", date.today().isoformat())
+    try:
+        report_date = date.fromisoformat(report_date_str)
+    except ValueError:
+        report_date = date.today()
+
+    day_start = datetime.combine(report_date, datetime.min.time())
+    day_end   = datetime.combine(report_date, datetime.max.time())
+
+    orders = Order.query.filter(
+        Order.restaurant_id == restaurant.id,
+        Order.created_at >= day_start,
+        Order.created_at <= day_end,
+    ).order_by(Order.created_at).all()
+
+    total_revenue = sum(float(o.total_amount) for o in orders)
+    return render_template("admin/daily_report.html",
+                           slug=slug, restaurant=restaurant,
+                           orders=orders, report_date=report_date,
+                           total_revenue=total_revenue)
+
+
 @admin_bp.route("/admin/orders/pending-count")
 @login_required
 def pending_count(slug):
