@@ -3,7 +3,10 @@
 {% block body %}
 
 <div class="confirm-hero">
-  {% if restaurant.logo_filename %}
+  {% if restaurant.logo_data %}
+    <img src="{{ restaurant.logo_data }}"
+         style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.4);margin-bottom:.5rem;">
+  {% elif restaurant.logo_filename %}
     <img src="{{ url_for('static', filename='uploads/' + slug + '/logos/' + restaurant.logo_filename) }}"
          style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.4);margin-bottom:.5rem;">
   {% endif %}
@@ -49,7 +52,7 @@
   <h3>📌 حالة الطلب</h3>
   {% set status_map = {'pending': ('⏳', 'في الانتظار'), 'preparing': ('👨‍🍳', 'قيد التحضير'), 'ready': ('✅', 'جاهز للاستلام'), 'delivered': ('🚀', 'تم التسليم')} %}
   {% set icon, label = status_map.get(order.status, ('❓', order.status)) %}
-  <span class="status-pill">{{ icon }} {{ label }}</span>
+  <span class="status-pill" id="statusPill">{{ icon }} {{ label }}</span>
   <p style="font-size:.82rem;color:#94A3B8;margin-top:.6rem;">
     سيتم توصيل طلبك إلى سيارتك — انتظر في الباركن
   </p>
@@ -58,26 +61,29 @@
 <a href="{{ url_for('menu.menu_page', slug=slug) }}" class="back-btn">← العودة للمنيو</a>
 
 {% if order.status not in ['ready', 'delivered'] %}
-<div style="text-align:center;padding:1rem 1rem .5rem;">
-  <div id="pushSection">
-    <button id="notifBtn" onclick="enableNotifications()"
-      style="background:var(--primary);color:white;border:none;border-radius:14px;
-             padding:.75rem 1.5rem;font-family:'Cairo',sans-serif;font-weight:800;
-             font-size:.95rem;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.15);width:100%;max-width:320px;">
-      🔔 فعّل إشعار جهوز الطلب
-    </button>
-  </div>
-  <div id="notifStatus" style="margin-top:.5rem;font-size:.85rem;color:#64748B;"></div>
+<!-- Sound activation — required once by all browsers -->
+<div style="text-align:center;padding:1rem 1rem 2rem;">
+  <button id="soundBtn" onclick="activateSound()"
+    style="background:var(--primary);color:white;border:none;border-radius:14px;
+           padding:.8rem 1.5rem;font-family:'Cairo',sans-serif;font-weight:800;
+           font-size:1rem;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.15);
+           width:100%;max-width:340px;">
+    🔔 فعّل الإشعار الصوتي عند جهوز طلبك
+  </button>
+  <div id="soundStatus" style="margin-top:.6rem;font-size:.85rem;"></div>
 </div>
 {% endif %}
 
-<!-- Ready notification banner (hidden by default) -->
-<div id="readyBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;
+<!-- Ready banner -->
+<div id="readyBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;
      background:linear-gradient(135deg,#22C55E,#16A34A);color:white;text-align:center;
-     padding:1.1rem;font-size:1.1rem;font-weight:800;box-shadow:0 4px 20px rgba(0,0,0,.2);
-     animation:slideDown .4s ease;">
+     padding:1.25rem 1rem;font-size:1.15rem;font-weight:800;
+     box-shadow:0 4px 20px rgba(0,0,0,.25);animation:slideDown .35s ease;cursor:pointer;"
+     onclick="this.style.display='none'">
   ✅ طلبك جاهز! تفضل استلمه 🚗
+  <div style="font-size:.8rem;font-weight:400;margin-top:.2rem;opacity:.9;">اضغط لإغلاق هذا الإشعار</div>
 </div>
+
 <style>
 @keyframes slideDown { from { transform:translateY(-100%); } to { transform:translateY(0); } }
 </style>
@@ -85,75 +91,69 @@
 <script>
 const ORDER_NUMBER = {{ order.order_number|tojson }};
 const SLUG = {{ slug|tojson }};
-const VAPID_PUBLIC_KEY = {{ config['VAPID_PUBLIC_KEY']|tojson }};
-const PUSH_SUPPORTED = ('serviceWorker' in navigator) && ('PushManager' in window);
+let audioCtx = null;
+let soundReady = false;
+let notified = false;
 
-// ─── Fallback polling (works on all browsers) ─────────────────────────────────
-let _notified = false;
-function _checkStatus() {
-  if (_notified) return;
-  fetch(`/r/${SLUG}/order/status/${ORDER_NUMBER}`)
-    .then(r => r.json())
-    .then(d => {
-      if (d.status === 'ready' || d.status === 'delivered') {
-        _notified = true;
-        document.getElementById('readyBanner').style.display = 'block';
-        if (navigator.vibrate) navigator.vibrate([300,150,300]);
-      }
-    }).catch(()=>{});
-}
-
-// Start polling automatically for all users
-{% if order.status not in ['ready', 'delivered'] %}
-setInterval(_checkStatus, 6000);
-
-// If browser doesn't support push → hide button, polling is enough
-if (!PUSH_SUPPORTED) {
-  document.getElementById('pushSection').style.display = 'none';
-  document.getElementById('notifStatus').innerHTML =
-    '<span style="color:#22C55E;font-weight:700;">✅ سنبلغك تلقائياً عند جهوز طلبك</span>';
-}
-{% endif %}
-
-function urlBase64ToUint8Array(b) {
-  const pad = '='.repeat((4 - b.length % 4) % 4);
-  const raw = atob((b + pad).replace(/-/g,'+').replace(/_/g,'/'));
-  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
-}
-
-async function enableNotifications() {
-  const btn = document.getElementById('notifBtn');
-  const status = document.getElementById('notifStatus');
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    status.textContent = '⚠️ متصفحك لا يدعم الإشعارات';
-    return;
-  }
+function activateSound() {
   try {
-    btn.disabled = true;
-    btn.textContent = '⏳ جاري التفعيل...';
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') {
-      status.textContent = '❌ يجب السماح بالإشعارات من إعدادات المتصفح';
-      btn.disabled = false; btn.textContent = '🔔 فعّل إشعار جهوز الطلب'; return;
-    }
-    const reg = await navigator.serviceWorker.register('/static/sw.js');
-    await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-    });
-    await fetch(`/r/${SLUG}/order/subscribe`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({order_number: ORDER_NUMBER, subscription: sub.toJSON()}),
-    });
-    btn.style.display = 'none';
-    status.innerHTML = '<span style="color:#22C55E;font-weight:700;">✅ سيصلك إشعار حتى لو أغلقت الصفحة</span>';
-  } catch(e) {
-    status.textContent = '⚠️ تعذّر التفعيل، حاول مجدداً';
-    btn.disabled = false; btn.textContent = '🔔 فعّل إشعار جهوز الطلب';
-  }
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Play a silent buffer to fully unlock audio on iOS
+    const buf = audioCtx.createBuffer(1, 1, 22050);
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(audioCtx.destination);
+    src.start(0);
+    soundReady = true;
+  } catch(e) {}
+
+  document.getElementById('soundBtn').style.display = 'none';
+  document.getElementById('soundStatus').innerHTML =
+    '<span style="color:#22C55E;font-weight:700;">✅ الإشعار الصوتي مفعّل — ابقَ في الباركن ✅</span>';
 }
+
+function playReadySound() {
+  try {
+    const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.5, ctx.currentTime + i * 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.2 + 0.5);
+      osc.start(ctx.currentTime + i * 0.2);
+      osc.stop(ctx.currentTime + i * 0.2 + 0.5);
+    });
+  } catch(e) {}
+  if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+}
+
+function showReadyBanner() {
+  const banner = document.getElementById('readyBanner');
+  banner.style.display = 'block';
+  // Also update status pill
+  const pill = document.getElementById('statusPill');
+  if (pill) pill.textContent = '✅ جاهز للاستلام';
+}
+
+{% if order.status not in ['ready', 'delivered'] %}
+// Poll every 5 seconds — works on ALL browsers, ALL phones, no permissions needed
+setInterval(function() {
+  if (notified) return;
+  fetch('/r/' + SLUG + '/order/status/' + ORDER_NUMBER)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status === 'ready' || d.status === 'delivered') {
+        notified = true;
+        if (soundReady) playReadySound();
+        showReadyBanner();
+      }
+    }).catch(function() {});
+}, 5000);
+{% endif %}
 </script>
 
 {% endblock %}
