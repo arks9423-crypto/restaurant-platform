@@ -16,15 +16,8 @@
 <!-- Car Details -->
 <div class="confirm-card">
   <h3>🚗 بيانات السيارة</h3>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;font-size:.88rem;">
-    <div><span style="color:#94A3B8;">اللوحة:</span> <strong>{{ order.car_plate }}</strong></div>
-    <div><span style="color:#94A3B8;">اللون:</span> <strong>{{ order.car_color }}</strong></div>
-    {% if order.car_model %}
-    <div><span style="color:#94A3B8;">الموديل:</span> <strong>{{ order.car_model }}</strong></div>
-    {% endif %}
-    {% if order.parking_spot %}
-    <div><span style="color:#94A3B8;">الموقف:</span> <strong>{{ order.parking_spot }}</strong></div>
-    {% endif %}
+  <div style="font-size:.9rem;">
+    <span style="color:#94A3B8;">رقم اللوحة:</span> <strong>{{ order.car_plate }}</strong>
   </div>
   {% if order.notes %}
   <div style="margin-top:.75rem;padding:.5rem .75rem;background:#FEF9C3;border-radius:8px;font-size:.82rem;">

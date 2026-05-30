@@ -165,11 +165,7 @@ function goStep(n) {
   }
   if (n === 3) {
     const plate = document.getElementById('carPlate')?.value.trim();
-    const model = document.getElementById('carModel')?.value.trim();
-    const color = document.getElementById('carColor')?.value.trim();
     if (!plate) { shakeInput('carPlate'); showModalError('يرجى إدخال رقم اللوحة'); return; }
-    if (!model) { shakeInput('carModel'); showModalError('يرجى إدخال نوع السيارة'); return; }
-    if (!color) { shakeInput('carColor'); showModalError('يرجى إدخال لون السيارة'); return; }
   }
   currentStep = n;
   renderStep(n);
@@ -258,14 +254,6 @@ function renderCarStep(body) {
       <input class="form-input" type="text" id="carPlate" value="${saved.plate||''}" placeholder="مثال: ABC 1234">
     </div>
     <div class="form-group">
-      <label class="form-label">نوع السيارة <span style="color:#EF4444;">*</span></label>
-      <input class="form-input" type="text" id="carModel" value="${saved.model||''}" placeholder="مثال: تويوتا كامري">
-    </div>
-    <div class="form-group">
-      <label class="form-label">لون السيارة <span style="color:#EF4444;">*</span></label>
-      <input class="form-input" type="text" id="carColor" value="${saved.color||''}" placeholder="مثال: أبيض">
-    </div>
-    <div class="form-group">
       <label class="form-label">ملاحظات (اختياري)</label>
       <textarea class="form-input" id="orderNotes" rows="2" placeholder="أي طلبات خاصة...">${saved.notes||''}</textarea>
     </div>
@@ -276,15 +264,9 @@ function renderCarStep(body) {
 
 function saveCarAndPreview() {
   const plate = document.getElementById('carPlate')?.value.trim();
-  const model = document.getElementById('carModel')?.value.trim();
-  const color = document.getElementById('carColor')?.value.trim();
   if (!plate) { shakeInput('carPlate'); showModalError('يرجى إدخال رقم اللوحة'); return; }
-  if (!model) { shakeInput('carModel'); showModalError('يرجى إدخال نوع السيارة'); return; }
-  if (!color) { shakeInput('carColor'); showModalError('يرجى إدخال لون السيارة'); return; }
   window._carData = {
     plate,
-    model,
-    color,
     notes: document.getElementById('orderNotes')?.value.trim() || '',
   };
   goStep(3);
@@ -329,10 +311,8 @@ function renderInvoiceStep(body) {
       <!-- Car info -->
       <div style="padding:.75rem 1rem;background:var(--theme-bg-page,#f8fafc);">
         <div style="font-size:.75rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;">🚗 بيانات التوصيل</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.35rem;font-size:.85rem;">
-          <div><span style="color:#94A3B8;">اللوحة: </span><strong>${car.plate}</strong></div>
-          <div><span style="color:#94A3B8;">النوع: </span><strong>${car.model}</strong></div>
-          <div><span style="color:#94A3B8;">اللون: </span><strong>${car.color}</strong></div>
+        <div style="font-size:.9rem;">
+          <span style="color:#94A3B8;">رقم اللوحة: </span><strong>${car.plate}</strong>
         </div>
         ${car.notes ? `<div style="margin-top:.5rem;background:#FEF9C3;border-radius:6px;padding:.35rem .6rem;font-size:.8rem;">💬 ${car.notes}</div>` : ''}
       </div>
@@ -359,8 +339,6 @@ async function submitOrder() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         car_plate:    car.plate,
-        car_model:    car.model || '',
-        car_color:    car.color,
         notes:        car.notes || '',
         cart: Object.values(cart).map(i => ({ id: i.id, quantity: i.qty })),
       }),

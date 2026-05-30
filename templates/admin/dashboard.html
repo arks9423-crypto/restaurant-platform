@@ -5,7 +5,11 @@
 <div class="admin-topbar">
   <span class="page-title">📋 الطلبات الحية</span>
   <div style="display:flex;align-items:center;gap:.75rem;">
-    <span style="font-size:.8rem;color:#94A3B8;">تحديث تلقائي كل 30 ثانية</span>
+    <button id="soundBtn" onclick="unlockSound()"
+      style="background:#6366F1;color:white;border:none;border-radius:8px;padding:.35rem .8rem;font-family:'Cairo',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;">
+      🔔 فعّل الصوت
+    </button>
+    <span id="soundOn" style="display:none;font-size:.8rem;color:#22C55E;font-weight:700;">🔔 الصوت مفعّل</span>
     {% if restaurant.is_open %}
       <span style="background:#D1FAE5;color:#065F46;padding:.25rem .7rem;border-radius:999px;font-size:.78rem;font-weight:700;">🟢 مفتوح</span>
     {% else %}
@@ -48,7 +52,7 @@
         <div class="order-number">{{ order.order_number }}</div>
         <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.ع</div>
       </div>
-      <div class="order-car">🚗 {{ order.car_color }} — {{ order.car_plate }}{% if order.car_model %} ({{ order.car_model }}){% endif %}</div>
+      <div class="order-car">🚗 {{ order.car_plate }}</div>
       <div class="order-items">
         {% for item in order.items %}{{ item.product_name_ar }} × {{ item.quantity }}{% if not loop.last %}، {% endif %}{% endfor %}
       </div>
@@ -111,7 +115,7 @@
         <div class="order-number">{{ order.order_number }}</div>
         <div class="order-total">{{ "%.3f"|format(order.total_amount) }} ر.ع</div>
       </div>
-      <div class="order-car">🚗 {{ order.car_color }} — {{ order.car_plate }}{% if order.car_model %} ({{ order.car_model }}){% endif %}</div>
+      <div class="order-car">🚗 {{ order.car_plate }}</div>
       <div class="order-actions">
         <form method="POST" action="{{ url_for('admin.update_order_status', slug=slug, order_id=order.id) }}">
           <input type="hidden" name="status" value="delivered">
@@ -151,10 +155,29 @@
 {% endif %}
 
 <script>
-// ─── Sound notification for new orders ───────────────────────────────────────
+const SLUG = {{ slug|tojson }};
+let audioCtx = null;
+let prevCount = {{ pending|length }};
+let soundUnlocked = false;
+
+function unlockSound() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = audioCtx.createBuffer(1, 1, 22050);
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(audioCtx.destination);
+    src.start(0);
+    soundUnlocked = true;
+    document.getElementById('soundBtn').style.display = 'none';
+    document.getElementById('soundOn').style.display = 'inline-block';
+  } catch(e) {}
+}
+
 function playNewOrderSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     [0, 0.28, 0.56].forEach(delay => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -162,24 +185,27 @@ function playNewOrderSound() {
       gain.connect(ctx.destination);
       osc.type = 'sine';
       osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.5, ctx.currentTime + delay);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.25);
+      gain.gain.setValueAtTime(0.6, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.28);
       osc.start(ctx.currentTime + delay);
-      osc.stop(ctx.currentTime + delay + 0.25);
+      osc.stop(ctx.currentTime + delay + 0.28);
     });
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   } catch(e) {}
 }
 
-const SNAP_KEY = 'pendingSnap_{{ slug }}';
-const currPending = {{ pending|length }};
-const prevPending = localStorage.getItem(SNAP_KEY);
-
-if (prevPending !== null && currPending > parseInt(prevPending)) {
-  playNewOrderSound();
+async function checkNewOrders() {
+  try {
+    const res = await fetch(`/r/${SLUG}/admin/orders/pending-count`);
+    const data = await res.json();
+    if (data.count > prevCount) {
+      playNewOrderSound();
+      location.reload();
+    }
+    prevCount = data.count;
+  } catch(e) {}
 }
-localStorage.setItem(SNAP_KEY, currPending);
 
-// ─── Auto-refresh every 20 seconds ───────────────────────────────────────────
-setTimeout(() => location.reload(), 20000);
+setInterval(checkNewOrders, 5000);
 </script>
 {% endblock %}

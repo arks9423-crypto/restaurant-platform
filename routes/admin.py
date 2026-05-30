@@ -30,6 +30,14 @@ def dashboard(slug):
                            recent_delivered=recent_delivered)
 
 
+@admin_bp.route("/admin/orders/pending-count")
+@login_required
+def pending_count(slug):
+    restaurant = get_restaurant_or_404(slug)
+    count = Order.query.filter_by(restaurant_id=restaurant.id, status="pending").count()
+    return jsonify({"count": count})
+
+
 @admin_bp.route("/admin/orders/<int:order_id>/print")
 @login_required
 def print_order(slug, order_id):
